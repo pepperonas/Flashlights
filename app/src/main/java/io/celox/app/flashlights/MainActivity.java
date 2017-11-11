@@ -59,9 +59,8 @@ public class MainActivity extends AppCompatActivity {
     private static final UUID SERVICE_UUID = UUID.fromString("0000ffe5-0000-1000-8000-00805f9b34fb");
     private static final UUID CHARACTERISTIC_COUNTER_UUID = UUID.fromString("0000ffe9-0000-1000-8000-00805f9b34fb");
 
-    private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
-    private BluetoothGatt mGatt;
+    private BluetoothGatt mBluetoothGatt;
 
     private android.bluetooth.BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
@@ -94,13 +93,13 @@ public class MainActivity extends AppCompatActivity {
                     scanner.stopScan(mScanCallback);
 
                     Log.i(TAG, "LED found...");
-                    characteristic = gattService.getCharacteristic(UUID.fromString("0000ffe9-0000-1000-8000-00805f9b34fb"));
+                    mCharacteristic = gattService.getCharacteristic(UUID.fromString("0000ffe9-0000-1000-8000-00805f9b34fb"));
 
                     String command = "FFFFFF";
                     String originalString = "56" + command + "00F0AA";
                     byte[] b = Utils.hexStringToByteArray(originalString);
-                    characteristic.setValue(b);
-                    mGatt.writeCharacteristic(characteristic);
+                    mCharacteristic.setValue(b);
+                    mBluetoothGatt.writeCharacteristic(mCharacteristic);
                 }
             }
         }
@@ -148,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 String deviceName = device.getName();
                 // device detected, we can automatically connect to it and stop the scan
                 Log.i(TAG, "onBatchScanResults: " + deviceName + "=" + deviceAddress);
-                mGatt = device.connectGatt(MainActivity.this, false, mGattCallback);
+                mBluetoothGatt = device.connectGatt(MainActivity.this, false, mGattCallback);
             }
         }
 
@@ -157,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "onScanFailed: " + errorCode);
         }
     };
-    private BluetoothGattCharacteristic characteristic;
+    private BluetoothGattCharacteristic mCharacteristic;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         try {
-            mGatt.close();
+            mBluetoothGatt.close();
         } catch (Exception e) {
             Log.e(TAG, "onDestroy: ", e);
         }
@@ -180,9 +179,9 @@ public class MainActivity extends AppCompatActivity {
     private void startApp() {
         Log.i(TAG, "Starting app...");
 
-        mBluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-        if (mBluetoothManager != null) {
-            mBluetoothAdapter = mBluetoothManager.getAdapter();
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        if (bluetoothManager != null) {
+            mBluetoothAdapter = bluetoothManager.getAdapter();
         }
 
         if (!mBluetoothAdapter.isEnabled()) {
@@ -251,8 +250,8 @@ public class MainActivity extends AppCompatActivity {
                     String command = ((TextView) findViewById(R.id.tv_command)).getText().toString();
                     String originalString = "56" + command + "00F0AA";
                     byte[] b = Utils.hexStringToByteArray(originalString);
-                    characteristic.setValue(b);
-                    mGatt.writeCharacteristic(characteristic);
+                    mCharacteristic.setValue(b);
+                    mBluetoothGatt.writeCharacteristic(mCharacteristic);
                 } catch (Exception e) {
                     Log.e(TAG, "onClick: ", e);
                 }
