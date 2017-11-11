@@ -1,0 +1,99 @@
+/*
+ * Copyright (c) 2017 Martin Pfeffer
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'com.android.application'
+
+repositories {
+    jcenter()
+    maven { url "https://jitpack.io" }
+    maven { url 'https://maven.google.com' }
+    flatDir {
+        // get dependencies from app/libs (.aar-packages)
+        dirs 'libs'
+    }
+}
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion "27.0.1"
+    defaultConfig {
+        applicationId "io.celox.app.flashlights"
+        minSdkVersion 18
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        flavorDimensions "default"
+
+        productFlavors {
+            /**
+             * let app data depend on the flavor,
+             * see also res-folders 'dev' and 'pro'
+             * */
+            dev {
+                dimension "default"
+                // used by the developer
+                resValue "string", "theString", "unused 1"
+                buildConfigField "long", "APP_CREATED", "1500000000000" + "L"
+//                resConfigs "en", "xxhdpi"
+            }
+            pro {
+                dimension "default"
+                // used for production
+                resValue "string", "theString", "unused 2"
+                buildConfigField "long", "APP_CREATED", System.currentTimeMillis() + "L"
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // android design & support-lib
+    compile 'com.android.support:design:27.0.0'
+    compile 'com.android.support:appcompat-v7:27.0.0'
+    compile 'com.android.support:recyclerview-v7:27.0.0'
+    // project helper
+    compile 'com.android.support:multidex:1.0.2'
+    compile 'org.jetbrains:annotations-java5:15.0'
+    // pepperonas
+    compile 'com.github.pepperonas:materialdialog:0.3.4'
+    compile 'com.github.pepperonas:aespreferences:0.0.6'
+    compile 'com.github.pepperonas:andbasx:0.3.0'
+    // icons
+    compile 'com.mikepenz:iconics-core:2.9.3@aar'
+    compile 'com.mikepenz:google-material-typeface:3.0.1.0.original@aar'
+    compile 'com.mikepenz:material-design-iconic-typeface:2.2.0.2@aar'
+    compile 'com.mikepenz:community-material-typeface:1.8.36.1@aar'
+    // preference fragment
+    compile 'com.github.machinarius:preferencefragment:0.1.1'
+    // color picker
+    compile 'com.pes.materialcolorpicker:library:1.2.0'
+    // ble
+    compile 'no.nordicsemi.android.support.v18:scanner:1.0.0'
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.1', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}
